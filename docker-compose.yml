@@ -12,6 +12,8 @@ services:
       - backend
     volumes:
       - ./api:/usr/app/
+    depends_on:
+      - postgres
     command: bash
     tty: true
 
@@ -21,4 +23,27 @@ services:
       dockerfile: ./Dockerfile-test-api
     networks:
       - backend
+    depends_on:
+      - postgres
     command: yarn test
+
+  postgres:
+    image: postgres:15.3
+    container_name: bdd
+    environment:
+      POSTGRES_DB : testdb
+      POSTGRES_USER: testuser
+      POSTGRES_PASSWORD: testpw
+    logging:
+      options:
+        max-size: 10m
+        max-file: "3"
+    networks:
+      - backend
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./sql/init_tables.sql:/docker-entrypoint-initdb.d/init_tables.sql
+
+volumes:
+  pgdata:
+    driver: local
